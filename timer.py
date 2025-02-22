@@ -1,49 +1,72 @@
 import time
-from tkinter import *
-from tkinter import messagebox
-import tkinter.font as tkFont
+import customtkinter as ctk
 import math
 
-root = Tk()
+ctk.set_appearance_mode("System")
+ctk.set_default_color_theme("blue")
 
+root = ctk.CTk()
 root.geometry("1000x1000")
 root.title("Timer")
 
-hour = StringVar()
-minute = StringVar()
-second = StringVar()
-
-hour.set("00")
-minute.set("05")
-second.set("00")
+hour = ctk.StringVar(value="00")
+minute = ctk.StringVar(value="05")
+second = ctk.StringVar(value="00")
 
 def relax():
     hour.set("00")
     minute.set("5")
     second.set("00")
 
-hourEntry = Entry(root, width=3, font=("Arial", 18, ""), textvariable=hour, state='readonly')
-hourEntry.place(x=80, y=20)
-minuteEntry = Entry(root, width=3, font=("Arial", 18, ""), textvariable=minute, state='readonly')
-minuteEntry.place(x=130, y=20)
-secondEntry = Entry(root, width=3, font=("Arial", 18, ""), textvariable=second, state='readonly')
-secondEntry.place(x=180, y=20)
+# Configure grid weights for root (simplified since labels are now on canvas)
+root.grid_rowconfigure(0, weight=1)  # Space above canvas
+root.grid_rowconfigure(1, weight=0)  # Canvas row
+root.grid_rowconfigure(2, weight=1)  # Button row
+root.grid_columnconfigure(0, weight=1)  # Center horizontally
 
-canvas = Canvas(root, width=150, height=150, bg='white', highlightthickness=0)
-canvas.place(x=75, y=60)
-canvas.create_oval(25, 25, 125, 125, outline='gray', width=5)
+# Canvas setup
+canvas_size = int(min(root.winfo_screenwidth(), root.winfo_screenheight()) * 0.6)
+canvas = ctk.CTkCanvas(master=root, width=canvas_size, height=canvas_size, 
+                      bg=root.cget('bg'), highlightthickness=0)
+canvas.grid(row=1, column=0, pady=20)
+
+# Circle dimensions
+padding = 25
+circle_size = canvas_size - 2 * padding
+canvas.create_oval(padding, padding, circle_size + padding, circle_size + padding, 
+                  outline='gray', width=5)
+
+# Place labels inside the circle (centered)
+center_x = canvas_size / 2
+center_y = canvas_size / 2
+
+hourLabel = ctk.CTkLabel(master=canvas, textvariable=hour, font=("Arial", 35))
+hourLabel.place(x=center_x - 70, y=center_y - 20, anchor="center")
+
+colonLabel1 = ctk.CTkLabel(master=canvas, text=":", font=("Arial", 35))
+colonLabel1.place(x=center_x - 25, y=center_y - 20, anchor="center")
+
+minuteLabel = ctk.CTkLabel(master=canvas, textvariable=minute, font=("Arial", 35))
+minuteLabel.place(x=center_x, y=center_y - 20, anchor="center")
+
+colonLabel2 = ctk.CTkLabel(master=canvas, text=":", font=("Arial", 35))
+colonLabel2.place(x=center_x + 25, y=center_y - 20, anchor="center")
+
+secondLabel = ctk.CTkLabel(master=canvas, textvariable=second, font=("Arial", 35))
+secondLabel.place(x=center_x + 70, y=center_y - 20, anchor="center")
 
 def countdown():
     try:
-        temp = int(hour.get()) * 3600 + int(minute.get()) * 60 + int(second.get()) 
+        temp = int(hour.get()) * 3600 + int(minute.get()) * 60 + int(second.get())
         total_time = temp
 
         if temp < 0:
-            messagebox.showerror("Error", "Invalid time input!")
+            ctk.CTkMessageBox(master=root, title="Error", 
+                            message="Invalid time input!", 
+                            icon="cancel").show()
             return
         
-        btn.config(state=DISABLED)
-        
+        btn.configure(state="disabled")
         canvas.delete("progress")
 
         def update_timer():
@@ -58,41 +81,47 @@ def countdown():
 
                 angle = 360 * (total_time - temp) / total_time
                 
-                start_angle = 90  
+                start_angle = 90
                 end_angle = start_angle - angle
                 
-                start_rad = math.radians(start_angle)
-                end_rad = math.radians(end_angle)
-                
                 canvas.delete("progress")
-                canvas.create_arc(25, 25, 125, 125, 
-                                start=start_angle, 
+                canvas.create_arc(padding, padding, circle_size + padding - 20, 
+                                circle_size + padding - 20,
+                                start=start_angle,
                                 extent=-angle,
-                                outline='blue', 
-                                width=5, 
-                                style=ARC,
+                                outline='blue',
+                                width=5,
+                                style="arc",
                                 tags="progress")
 
                 if temp > 0:
                     temp -= 1
                     root.after(1000, update_timer)
                 else:
-                    messagebox.showinfo("Time Countdown", "Time's up!")
-                    btn.config(state=NORMAL)
-                    Relaxbtn = Button(root, text='Relax', bd='5', command=relax)
-                    Relaxbtn.place(x=70, y=212)
+                    ctk.CTkMessageBox(master=root, title="Time Countdown",
+                                   message="Time's up!",
+                                   icon="info").show()
+                    btn.configure(state="normal")
+                    relax_btn = ctk.CTkButton(master=root, text="Relax",
+                                            command=relax)
+                    relax_btn.grid(row=2, column=0, pady=20)
                     
             else:
-                messagebox.showinfo("Error", "Invalid time input!")
-                btn.config(state=NORMAL)
+                ctk.CTkMessageBox(master=root, title="Error",
+                               message="Invalid time input!",
+                               icon="cancel").show()
+                btn.configure(state="normal")
 
         update_timer()
 
     except ValueError:
-        messagebox.showerror("Invalid Input", "Please enter valid numbers.")
-        btn.config(state=NORMAL)
+        ctk.CTkMessageBox(master=root, title="Invalid Input",
+                         message="Please enter valid numbers.",
+                         icon="cancel").show()
+        btn.configure(state="normal")
 
-btn = Button(root, text='Set Time Countdown', bd='5', command=countdown)
-btn.place(x=70, y=212)
+# Button using grid
+btn = ctk.CTkButton(master=root, text="Set Time Countdown", command=countdown)
+btn.grid(row=2, column=0, pady=20)
 
 root.mainloop()
