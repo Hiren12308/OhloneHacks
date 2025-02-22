@@ -3,18 +3,13 @@ import time
 import math
 from tkinter import messagebox
 
-# Set theme
+# Initialize main window
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# Initialize main window
 root = ctk.CTk()
 root.title("Timer & To-Do List")
-
-# Dynamically set window size based on screen dimensions
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-root.geometry(f"{int(screen_width * 0.8)}x{int(screen_height * 0.8)}")  # Adjusted size to fit screen
+root.geometry("1000x600")  # Adjusted size
 
 tasks = []
 
@@ -86,9 +81,9 @@ def countdown():
 def toggle_strikethrough(task_label, task_var):
     """Strike through text when task is checked."""
     if task_var.get() == 1:
-        task_label.configure(font=("Arial", 18, "overstrike"), text_color="white")
+        task_label.configure(font=("Arial", 16, "overstrike"), text_color="white")
     else:
-        task_label.configure(font=("Arial", 18, "normal"), text_color="white")
+        task_label.configure(font=("Arial", 16, "normal"), text_color="white")
 
 def add_task():
     """Add a new task to the list."""
@@ -97,7 +92,7 @@ def add_task():
         task_frame = ctk.CTkFrame(tasks_frame, fg_color="transparent")
         task_var = ctk.IntVar()
 
-        task_label = ctk.CTkLabel(task_frame, text=task, font=("Arial", 18), text_color="white")
+        task_label = ctk.CTkLabel(task_frame, text=task, font=("Arial", 16), text_color="white")
         task_checkbox = ctk.CTkCheckBox(task_frame, text="", variable=task_var, 
                                         command=lambda: toggle_strikethrough(task_label, task_var))
 
@@ -127,46 +122,44 @@ def clear_tasks():
         task_frame.destroy()
     tasks.clear()
 
-# ------------------------ UI LAYOUT (RESPONSIVE) ------------------------
+# ------------------------ UI LAYOUT ------------------------
 
 main_frame = ctk.CTkFrame(root)
-main_frame.pack(pady=10, padx=10, fill="both", expand=True)
+main_frame.pack(pady=20, padx=20, fill="both", expand=True)
 
 # -------- LEFT SIDE: TIMER --------
 timer_frame = ctk.CTkFrame(main_frame)
 timer_frame.pack(side="left", padx=20, fill="both", expand=True)
 
-# Responsive canvas size
-canvas_size = int(min(screen_width, screen_height) * 0.3)
+# Canvas setup for Timer
+canvas_size = 250
 canvas = ctk.CTkCanvas(master=timer_frame, width=canvas_size, height=canvas_size, 
                       bg=root.cget('bg'), highlightthickness=0)
 canvas.pack(pady=10)
 
 # Circle dimensions
-padding = 20
+padding = 25
 circle_size = canvas_size - 2 * padding
 canvas.create_oval(padding, padding, circle_size + padding, circle_size + padding, 
                   outline='gray', width=5)
 
-# Center labels inside the circle
+# Timer labels (inside the circle)
 center_x = canvas_size / 2
 center_y = canvas_size / 2
 
-font_size = int(canvas_size * 0.1)  # Adjust font size dynamically
-
-hourLabel = ctk.CTkLabel(master=canvas, textvariable=hour, font=("Arial", font_size))
+hourLabel = ctk.CTkLabel(master=canvas, textvariable=hour, font=("Arial", 20))
 hourLabel.place(x=center_x - 50, y=center_y, anchor="center")
 
-colonLabel1 = ctk.CTkLabel(master=canvas, text=":", font=("Arial", font_size))
+colonLabel1 = ctk.CTkLabel(master=canvas, text=":", font=("Arial", 20))
 colonLabel1.place(x=center_x - 15, y=center_y, anchor="center")
 
-minuteLabel = ctk.CTkLabel(master=canvas, textvariable=minute, font=("Arial", font_size))
+minuteLabel = ctk.CTkLabel(master=canvas, textvariable=minute, font=("Arial", 20))
 minuteLabel.place(x=center_x + 10, y=center_y, anchor="center")
 
-colonLabel2 = ctk.CTkLabel(master=canvas, text=":", font=("Arial", font_size))
+colonLabel2 = ctk.CTkLabel(master=canvas, text=":", font=("Arial", 20))
 colonLabel2.place(x=center_x + 35, y=center_y, anchor="center")
 
-secondLabel = ctk.CTkLabel(master=canvas, textvariable=second, font=("Arial", font_size))
+secondLabel = ctk.CTkLabel(master=canvas, textvariable=second, font=("Arial", 20))
 secondLabel.place(x=center_x + 65, y=center_y, anchor="center")
 
 # Timer Buttons
@@ -186,10 +179,12 @@ tasks_frame.pack(fill="both", expand=True, pady=5)
 buttons_frame = ctk.CTkFrame(todo_frame, fg_color="transparent")
 buttons_frame.pack(fill="x", pady=5)
 
-delete_button = ctk.CTkButton(buttons_frame, text="Delete Task", command=delete_task, fg_color="red", font=("Arial", 14, "bold"))
+delete_button = ctk.CTkButton(buttons_frame, text="Delete Task", command=delete_task, 
+                              fg_color="red", hover_color="darkred", font=("Arial", 14, "bold"))
 delete_button.pack(side="left", padx=5, expand=True)
 
-clear_button = ctk.CTkButton(buttons_frame, text="Clear Tasks", command=clear_tasks, fg_color="gray", font=("Arial", 14, "bold"))
+clear_button = ctk.CTkButton(buttons_frame, text="Clear Tasks", command=clear_tasks, 
+                             fg_color="gray", hover_color="darkgray", font=("Arial", 14, "bold"))
 clear_button.pack(side="left", padx=5, expand=True)
 
 task_entry = ctk.CTkEntry(todo_frame, placeholder_text="Enter a task...", font=("Arial", 14))
@@ -198,4 +193,5 @@ task_entry.pack(pady=5, fill="x")
 add_button = ctk.CTkButton(todo_frame, text="Add Task", command=add_task, font=("Arial", 14, "bold"))
 add_button.pack(pady=5, fill="x")
 
+# Run the main loop
 root.mainloop()
