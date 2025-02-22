@@ -1,3 +1,5 @@
 import tkinter as tk
 
-print("Hello World.")
+root = tk.Tk()
+root.title("Hello World")
+root.geometry("400x200")
