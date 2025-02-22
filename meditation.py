@@ -15,6 +15,7 @@ def countdown(count, message, on_complete=None):
 
     if count >= 0:
         window.after(1000, countdown, count - 1, message, on_complete)
+        meditation_progress_bar.start()
     else:
         if on_complete:
             on_complete()
@@ -47,8 +48,11 @@ message_label.place(x=35, y=50)
 
 start_meditation = ctk.CTkButton(window, text="Start Meditation", command=lambda: run_countdowns(sequence))
 stop_meditation = ctk.CTkButton(window, text="Stop Meditation", command=lambda: terminate_meditation())
-
 start_meditation.grid(row=0, column=0, padx=35, pady=150)
 stop_meditation.grid(row=1, column=0, padx=35, pady=10)
+
+meditation_progress_bar = ctk.CTkProgressBar(window, orientation = "horizontal", indeterminate_speed=0.5)
+meditation_progress_bar.set(0)
+meditation_progress_bar.place(x=35, y=75)
 
 window.mainloop()
