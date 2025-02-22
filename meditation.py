@@ -1,7 +1,15 @@
 import customtkinter as ctk
 import tkinter as tk
 
+stop_countdown = False
+
 def countdown(count, message, on_complete=None):
+    global stop_countdown
+
+    if stop_countdown:
+        stop_countdown = False
+        return
+
     label.configure(text=count)
     message_label.configure(text=message)
 
@@ -12,9 +20,15 @@ def countdown(count, message, on_complete=None):
             on_complete()
 
 def run_countdowns(sequence, index=0):
+    global stop_countdown
+    stop_countdown = False
     if index < len(sequence):
         count, message = sequence[index]
         countdown(count, message, lambda: run_countdowns(sequence, index + 1))
+
+def terminate_meditation():
+    global stop_countdown
+    stop_countdown = True
 
 sequence = [
     (4, "Breathe in..."),
@@ -31,10 +45,10 @@ label.place(x=35, y=15)
 message_label = ctk.CTkLabel(window, text="")
 message_label.place(x=35, y=50)
 
-canvas = ctk.CTkCanvas(window, width=400, height=200)
-canvas.place(x=35, y=100)
-
 start_meditation = ctk.CTkButton(window, text="Start Meditation", command=lambda: run_countdowns(sequence))
-start_meditation.place(x=35, y=150)
+stop_meditation = ctk.CTkButton(window, text="Stop Meditation", command=lambda: terminate_meditation())
+
+start_meditation.grid(row=0, column=0, padx=35, pady=150)
+stop_meditation.grid(row=1, column=0, padx=35, pady=10)
 
 window.mainloop()
