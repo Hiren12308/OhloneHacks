@@ -15,7 +15,7 @@ second = ctk.StringVar(value="00")
 
 def relax():
     hour.set("00")
-    minute.set("5")
+    minute.set("01")
     second.set("00")
 
 # Configure grid weights for root (simplified since labels are now on canvas)
