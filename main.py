@@ -62,6 +62,19 @@ def relax():
     # Show the "Meditate" button underneath the "Relax (5 min)" button
     meditate_button.pack(pady=5)
 
+
+def terminate_relax():
+    global stop
+    stop = True
+    # Reset the timer to default values
+    hour.set("00")
+    minute.set("25")
+    second.set("00")
+
+    # Hide the "Relax (5 min)" and "Meditate" buttons
+    relax_button.pack_forget()
+    meditate_button.pack_forget()
+
 def switch_to_meditation():
     # Hide the To-Do List frame
     todo_frame.pack_forget()
@@ -77,7 +90,7 @@ def start_meditation():
 
 def terminate_meditation():
     global stop
-    pygame.mixer.pause()
+    pygame.mixer.quit()
     stop = True
 
     # Hide the Meditation frame
@@ -171,6 +184,10 @@ def countdown():
                     start_button.configure(state="normal")
                     relax_button.pack(pady=5)  # Show the "Relax (5 min)" button again
                     meditate_button.pack(pady=5)  # Show the "Meditate" button again
+                    hour.set("00")
+                    minute.set("25")
+                    second.set("00")
+
 
         update_timer()
 
@@ -394,5 +411,7 @@ start_meditation_button.grid(row=0, column=0, padx=35, pady=150)
 
 stop_meditation_button = ctk.CTkButton(meditation_frame, text="Stop Meditation", command=terminate_meditation)
 stop_meditation_button.grid(row=1, column=0, padx=35, pady=10)
+
+terminate_relax()
 
 root.mainloop()
