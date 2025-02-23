@@ -111,7 +111,7 @@ label.place(x=35, y=15)
 message_label = ctk.CTkLabel(root, text="")
 message_label.place(x=35, y=50)
 
-start_meditation = ctk.CTkButton(root, text="Start Meditation", command=lambda: run_countdowns(sequence) )
+start_meditation = ctk.CTkButton(root, text="Start Meditation", command=lambda: run_countdowns(sequence))
 start_meditation.grid(row=0, column=0, padx=35, pady=150)
 
 stop_meditation = ctk.CTkButton(root, text="Stop Meditation", command=terminate_meditation)
