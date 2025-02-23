@@ -240,7 +240,7 @@ tasks_frame.pack(fill="both", expand=True, pady=5)
 buttons_frame = ctk.CTkFrame(todo_frame, fg_color="transparent")
 buttons_frame.pack(fill="x", pady=5)
 
-delete_button = ctk.CTkButton(buttons_frame, text="Delete Task", command=delete_task, fg_color="red", font=("Arial", 14, "bold"))
+delete_button = ctk.CTkButton(buttons_frame, text="Delete Selected Task", command=delete_task, fg_color="red", font=("Arial", 14, "bold"))
 delete_button.pack(side="left", padx=5, expand=True)
 
 clear_button = ctk.CTkButton(buttons_frame, text="Clear Tasks", command=clear_tasks, fg_color="gray", font=("Arial", 14, "bold"))
