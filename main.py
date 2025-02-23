@@ -67,7 +67,7 @@ def countdown():
                     arc_padding + arc_size,
                     start=start_angle,
                     extent=-angle,
-                    outline='blue',
+                    outline='#3B8EEA',
                     width=5,
                     style="arc",
                     tags="progress"
