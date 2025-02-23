@@ -9,18 +9,15 @@ ctk.set_default_color_theme("blue")
 root = ctk.CTk()
 root.title("Timer & To-Do List")
 
-
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 root.geometry(f"{int(screen_width * 0.8)}x{int(screen_height * 0.8)}")
-
 
 hour = ctk.StringVar(value="00")
 minute = ctk.StringVar(value="03")
 second = ctk.StringVar(value="00")
 tasks = []
 clear_flag = False  
-
 
 def relax():
     hour.set("00")
@@ -55,7 +52,6 @@ def countdown():
                 start_angle = 90
                 end_angle = start_angle - angle
                 
-                
                 arc_padding = padding  
                 arc_size = circle_size  
                 
@@ -67,7 +63,7 @@ def countdown():
                     arc_padding + arc_size,
                     start=start_angle,
                     extent=-angle,
-                    outline='blue',
+                    outline='#3B8EEA',
                     width=5,
                     style="arc",
                     tags="progress"
@@ -87,8 +83,6 @@ def countdown():
         messagebox.showerror("Invalid Input", "Please enter valid numbers.")
         start_button.configure(state="normal")
 
-
-
 def toggle_strikethrough(task_label, task_var):
     if task_var.get() == 1:
         task_label.configure(font=("Arial", 18, "overstrike"), text_color="white")
@@ -106,6 +100,11 @@ def add_task():
         task_checkbox = ctk.CTkCheckBox(task_frame, text="", variable=task_var, 
                                       command=lambda: toggle_strikethrough(task_label, task_var))
 
+        # Add an "Edit" button to the far right of the task frame
+        edit_button = ctk.CTkButton(task_frame, text="Edit", width=50, font=("Arial", 12),
+                                   command=lambda: edit_task(task_label))
+        edit_button.pack(side="right", padx=5)
+
         task_checkbox.pack(side="left", padx=5, pady=3)
         task_label.pack(side="left", padx=10, pady=3)
         task_frame.pack(anchor="w", pady=5, fill="x")
@@ -115,6 +114,32 @@ def add_task():
         clear_flag = False  
     else:
         messagebox.showwarning("Warning", "You must enter a task.")
+
+def edit_task(task_label):
+    edit_window = ctk.CTkToplevel(root)
+    edit_window.title("Edit Task")
+    edit_window.geometry("300x100")
+
+    # Ensure the edit window appears on top of the main window
+    edit_window.lift()  # Bring the window to the top
+    edit_window.focus_force()  # Force focus on the window
+    edit_window.grab_set()  # Make the window modal
+
+    new_task_entry = ctk.CTkEntry(edit_window, font=("Arial", 14))
+    new_task_entry.pack(pady=10, padx=10, fill="x")
+    new_task_entry.insert(0, task_label.cget("text"))
+
+    def save_edited_task():
+        new_task = new_task_entry.get()
+        if new_task:
+            task_label.configure(text=new_task)
+            edit_window.grab_release()  # Release the grab before destroying the window
+            edit_window.destroy()
+        else:
+            messagebox.showwarning("Warning", "Task cannot be empty.")
+
+    save_button = ctk.CTkButton(edit_window, text="Save", command=save_edited_task, font=("Arial", 14, "bold"))
+    save_button.pack(pady=5)
 
 def delete_task():
     global clear_flag
@@ -159,6 +184,11 @@ def load_tasks():
                 task_checkbox = ctk.CTkCheckBox(task_frame, text="", variable=task_var, 
                                                 command=lambda: toggle_strikethrough(task_label, task_var))
 
+                # Add an "Edit" button to the far right of the task frame
+                edit_button = ctk.CTkButton(task_frame, text="Edit", width=50, font=("Arial", 12),
+                                           command=lambda: edit_task(task_label))
+                edit_button.pack(side="right", padx=5)
+
                 task_checkbox.pack(side="left", padx=5, pady=3)
                 task_label.pack(side="left", padx=10, pady=3)
                 task_frame.pack(anchor="w", pady=5, fill="x")
@@ -168,27 +198,21 @@ def load_tasks():
     except FileNotFoundError:
         messagebox.showwarning("Warning", "No saved tasks found.")
 
-
-
 main_frame = ctk.CTkFrame(root)
 main_frame.pack(pady=10, padx=10, fill="both", expand=True)
 
-
 timer_frame = ctk.CTkFrame(main_frame)
 timer_frame.pack(side="left", padx=20, fill="both", expand=True)
-
 
 canvas_size = int(min(screen_width, screen_height) * 0.3)
 canvas = ctk.CTkCanvas(master=timer_frame, width=canvas_size, height=canvas_size, 
                       bg=root.cget('bg'), highlightthickness=0)
 canvas.pack(pady=10)
 
-
 padding = 20
 circle_size = canvas_size - 2 * padding
 canvas.create_oval(padding, padding, circle_size + padding, circle_size + padding, 
                   outline='gray', width=5)
-
 
 center_x = canvas_size / 2
 center_y = canvas_size / 2
@@ -212,13 +236,11 @@ secondEntry = ctk.CTkEntry(master=canvas, textvariable=second, font=("Arial", fo
                           width=40, justify="center")
 secondEntry.place(x=center_x + 60, y=center_y, anchor="center")
 
-
 start_button = ctk.CTkButton(timer_frame, text="Start Countdown", command=countdown, font=("Arial", 14, "bold"))
 start_button.pack(pady=5)
 
 relax_button = ctk.CTkButton(timer_frame, text="Relax (5 min)", command=relax, font=("Arial", 14, "bold"))
 relax_button.pack_forget()  
-
 
 todo_frame = ctk.CTkFrame(main_frame)
 todo_frame.pack(side="right", padx=20, fill="both", expand=True)
