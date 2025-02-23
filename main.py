@@ -2,6 +2,19 @@ import customtkinter as ctk
 import time
 import math
 from tkinter import messagebox
+import pygame
+
+pygame.mixer.init()
+def play_alarm():
+    pygame.mixer.unpause()
+    pygame.mixer.music.load("audio/alarm_sound.mp3")
+    pygame.mixer.music.play()
+def play_nature():
+    pygame.mixer.unpause()
+    pygame.mixer.music.load("audio/nature_sounds.wav")
+    pygame.mixer.music.play()
+
+
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -14,19 +27,19 @@ screen_height = root.winfo_screenheight()
 root.geometry(f"{int(screen_width * 0.8)}x{int(screen_height * 0.8)}")
 
 hour = ctk.StringVar(value="00")
-minute = ctk.StringVar(value="03")
+minute = ctk.StringVar(value="25")
 second = ctk.StringVar(value="00")
 tasks = []
 clear_flag = False  
 
 # Meditation variables
 INHALE = "Breathe in..."
-INHALE_HOLD = "Hold..."
+INHALE_HOLD = "Hold inhale..."
 EXHALE = "Breathe out..."
-EXHALE_HOLD = "Hold..."
+EXHALE_HOLD = "Hold exhale..."
 stop = False
-center_x = 200
-center_y = 200
+centerX = 390
+centerY = 200
 radius = 10
 max_radius = 100
 min_radius = 10
@@ -59,11 +72,28 @@ def switch_to_meditation():
 def start_meditation():
     global stop
     stop = False
+    play_nature()
     render(1, INHALE, min_radius, radius_increment_size)
 
 def terminate_meditation():
     global stop
+    pygame.mixer.pause()
     stop = True
+
+    # Hide the Meditation frame
+    meditation_frame.pack_forget()
+
+    # Show the To-Do List frame
+    todo_frame.pack(side="right", padx=20, fill="both", expand=True)
+
+    # Reset the timer to default values
+    hour.set("00")
+    minute.set("25")
+    second.set("00")
+
+    # Hide the "Relax (5 min)" and "Meditate" buttons
+    relax_button.pack_forget()
+    meditate_button.pack_forget()
 
 def render(frame, stage_name, radius, radius_increment):
     if stop: return
@@ -81,7 +111,7 @@ def render(frame, stage_name, radius, radius_increment):
             stage_name = INHALE
             radius_increment = radius_increment_size
     message_label.configure(text=stage_name)
-    meditation_canvas.coords(circle, center_x - radius, center_y - radius, center_x + radius, center_y + radius)
+    meditation_canvas.coords(circle, centerX - radius, centerY - radius, centerX + radius, centerY + radius)
     frame += 1
     radius += radius_increment
     root.after(frame_duration_milliseconds, render, frame, stage_name, radius, radius_increment)
@@ -136,9 +166,11 @@ def countdown():
                     temp -= 1
                     root.after(1000, update_timer)
                 else:
+                    play_alarm()
                     messagebox.showinfo("Time Countdown", "Time's up!")
                     start_button.configure(state="normal")
                     relax_button.pack(pady=5)  # Show the "Relax (5 min)" button again
+                    meditate_button.pack(pady=5)  # Show the "Meditate" button again
 
         update_timer()
 
@@ -349,12 +381,12 @@ meditation_frame.grid_rowconfigure(0, weight=1)
 meditation_frame.grid_columnconfigure(0, weight=1)
 
 circle = meditation_canvas.create_oval(
-    center_x - radius, center_y - radius,
-    center_x + radius, center_y + radius,
+    centerX - radius, centerY + radius,
+    centerX + radius, centerY + radius,
     fill="#3B8EEA", outline="", width=0
 )
 
-message_label = ctk.CTkLabel(meditation_frame, text="", bg_color="#242424")
+message_label = ctk.CTkLabel(meditation_frame, text="", bg_color="#242424", font =("Arial", 24))
 message_label.place(x=35, y=50)
 
 start_meditation_button = ctk.CTkButton(meditation_frame, text="Start Meditation", command=start_meditation)
