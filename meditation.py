@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import random
 
 root = ctk.CTk()
 
@@ -11,6 +12,19 @@ stop_countdown = False
 
 # For the expanding circle
 pause = False
+
+tips = [
+    "Focus on your breath to stay present.",
+    "Let thoughts pass like clouds.",
+    "Relax your shoulders for deeper calm.",
+    "Try counting each exhale silently.",
+    "Visualize a peaceful place.",
+    "Soften your gaze to relax your mind.",
+    "Feel the air move through your nose.",
+    "Release tension with each breath.",
+    "Stay gentle with yourself.",
+    "Notice the rhythm of your breathing."
+]
 
 growing = True 
 center_x = 200
@@ -27,18 +41,14 @@ radius_step = (max_radius - min_radius) / steps_per_cycle
 # Functions:
 def animate_circle():
     global radius, growing, pause
-
     if pause:
         root.after(4000, resume_growth)
         return
-
     if growing:
         radius += radius_step
     else:
         radius -= radius_step
-
     canvas.coords(circle, center_x - radius, center_y - radius, center_x + radius, center_y + radius)
-
     if radius >= max_radius:
         growing = False
         pause = True
@@ -60,10 +70,8 @@ def countdown(count, message, on_complete=None):
     if stop_countdown:
         stop_countdown = False
         return
-
     label.configure(text=count)
     message_label.configure(text=message)
-
     if count >= 1:
         root.after(1000, countdown, count - 1, message, on_complete)
     else:
@@ -73,7 +81,6 @@ def countdown(count, message, on_complete=None):
 def run_countdowns(sequence, index=0):
     global stop_countdown
     stop_countdown = False
-
     animate_circle()
     if index < len(sequence):
         count, message = sequence[index]
@@ -83,7 +90,12 @@ def terminate_meditation():
     global stop_countdown
     stop_countdown = True
 
-# Other objects and things
+def update_tips_box():
+    random_tip = random.choice(tips)
+    tips_box_label.configure(text=f"Tip: {random_tip}")
+    root.after(2000, update_tips_box)  # Updates every 2 seconds
+
+# Meditation sequence
 sequence = [
     (4, "Breathe in..."),
     (4, "Hold..."),
@@ -106,15 +118,35 @@ circle = canvas.create_oval(
 )
 
 label = ctk.CTkLabel(root, text="")
-label.place(x=35, y=15)
+label.place(x=35, y=15)  # Separated for clarity
 
 message_label = ctk.CTkLabel(root, text="")
-message_label.place(x=35, y=50)
+message_label.place(x=35, y=50)  # Separated for clarity
+
+# Tips box with a frame for background
+tips_box_frame = ctk.CTkFrame(
+    root,
+    fg_color="#242424",  # Matches canvas background
+    width=adjusted_screenwidth,  # Full width to avoid corner gaps
+    height=50  # Consistent height
+)
+tips_box_frame.place(x=0, y=adjusted_screenheight - 75)  # Full width, moved up
+
+tips_box_label = ctk.CTkLabel(
+    tips_box_frame, 
+    text="", 
+    text_color="white",  # Visible against #242424
+    font=("Arial", 12)
+)  # Removed wraplength
+tips_box_label.place(relx=0.05, rely=0.7, anchor="w")  # Left-aligned inside frame
 
 start_meditation = ctk.CTkButton(root, text="Start Meditation", command=lambda: run_countdowns(sequence))
 start_meditation.grid(row=0, column=0, padx=35, pady=150)
 
 stop_meditation = ctk.CTkButton(root, text="Stop Meditation", command=terminate_meditation)
 stop_meditation.grid(row=1, column=0, padx=35, pady=10)
+
+# Start the tips box updates
+update_tips_box()
 
 root.mainloop()
