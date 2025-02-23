@@ -18,7 +18,7 @@ root.geometry(f"{int(screen_width * 0.8)}x{int(screen_height * 0.8)}")
 
 # Timer variables
 hour = ctk.StringVar(value="00")
-minute = ctk.StringVar(value="05")
+minute = ctk.StringVar(value="03")
 second = ctk.StringVar(value="00")
 tasks = []
 
@@ -42,6 +42,7 @@ def countdown():
         
         start_button.configure(state="disabled")
         canvas.delete("progress")
+        relax_button.pack_forget()  # Hide the relax button at the start
 
         def update_timer():
             nonlocal temp
@@ -82,6 +83,7 @@ def countdown():
                 else:
                     messagebox.showinfo("Time Countdown", "Time's up!")
                     start_button.configure(state="normal")
+                    relax_button.pack(pady=5)  # Show the relax button when timer ends
 
         update_timer()
 
@@ -184,7 +186,7 @@ start_button = ctk.CTkButton(timer_frame, text="Start Countdown", command=countd
 start_button.pack(pady=5)
 
 relax_button = ctk.CTkButton(timer_frame, text="Relax (5 min)", command=relax, font=("Arial", 14, "bold"))
-relax_button.pack(pady=5)
+relax_button.pack_forget()  # Initially hide the relax button
 
 # -------- RIGHT SIDE: TO-DO LIST --------
 todo_frame = ctk.CTkFrame(main_frame)
