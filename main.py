@@ -2,6 +2,13 @@ import customtkinter as ctk
 import time
 import math
 from tkinter import messagebox
+import pygame
+
+pygame.mixer.init()
+
+def play_alarm():
+   pygame.mixer.music.load("audio/alarm_sound.mp3")
+   pygame.mixer.music.play()
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -77,6 +84,7 @@ def countdown():
                     temp -= 1
                     root.after(1000, update_timer)
                 else:
+                    play_alarm()
                     messagebox.showinfo("Time Countdown", "Time's up!")
                     start_button.configure(state="normal")
                     relax_button.pack(pady=5)  
