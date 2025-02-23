@@ -23,13 +23,11 @@ clear_flag = False
 
 
 def relax():
-    """Reset timer to relaxation mode (5 mins)."""
     hour.set("00")
     minute.set("05")
     second.set("00")
 
 def countdown():
-    """Start the countdown timer."""
     try:
         temp = int(hour.get()) * 3600 + int(minute.get()) * 60 + int(second.get())
         total_time = temp
@@ -92,14 +90,12 @@ def countdown():
 
 
 def toggle_strikethrough(task_label, task_var):
-    """Strike through text when task is checked."""
     if task_var.get() == 1:
         task_label.configure(font=("Arial", 18, "overstrike"), text_color="white")
     else:
         task_label.configure(font=("Arial", 18, "normal"), text_color="white")
 
 def add_task():
-    """Add a new task to the list."""
     global clear_flag
     task = task_entry.get()
     if task:
@@ -121,7 +117,6 @@ def add_task():
         messagebox.showwarning("Warning", "You must enter a task.")
 
 def delete_task():
-    """Delete selected tasks."""
     global clear_flag
     unchecked_tasks = []
     for task_frame, task_var, task_label in tasks:
@@ -134,7 +129,6 @@ def delete_task():
     clear_flag = True  
 
 def clear_tasks():
-    """Clear all tasks."""
     global clear_flag
     for task_frame, _, _ in tasks:
         task_frame.destroy()
@@ -142,7 +136,6 @@ def clear_tasks():
     clear_flag = True  
 
 def save_tasks():
-    """Save tasks to a file."""
     with open("tasks.txt", "w") as file:
         for task_frame, task_var, task_label in tasks:
             task = task_label.cget("text")
@@ -150,7 +143,6 @@ def save_tasks():
     messagebox.showinfo("Info", "Tasks saved successfully.")
 
 def load_tasks():
-    """Load tasks from a file only if tasks have not been cleared."""
     if clear_flag:
         messagebox.showwarning("Warning", "You cannot load tasks after clearing or deleting them.")
         return
