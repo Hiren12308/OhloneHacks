@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import pygame
+import random
 
 root = ctk.CTk()
 
@@ -10,8 +11,8 @@ pygame.mixer.music.load("audio/nature_sounds.wav")
 pygame.mixer.music.play(loops = 3)
 
 # Screen size
-adjusted_screenwidth = (root.winfo_screenwidth()) * 0.8
-adjusted_screenheight = (root.winfo_screenheight()) * 0.8
+screenwidth = root.winfo_screenwidth()
+screenheight = root.winfo_screenheight()
 
 INHALE = "Breathe in..."
 INHALE_HOLD = "Hold inhale..."
@@ -69,9 +70,9 @@ def terminate_meditation():
     stop = True
 
 # Other objects and things
-root.geometry(f"{adjusted_screenwidth}x{adjusted_screenheight}")
+root.geometry(f"{screenwidth}x{screenheight}")
 
-canvas = ctk.CTkCanvas(root, width=adjusted_screenwidth, height=adjusted_screenheight, bg="#242424")
+canvas = ctk.CTkCanvas(root, width=screenwidth, height=screenheight, bg="#242424")
 canvas.grid(row=0, column=0, sticky="nsew")
 
 root.grid_rowconfigure(0, weight=1)
@@ -94,5 +95,41 @@ start_meditation_button.grid(row=0, column=0, padx=35, pady=150)
 
 stop_meditation_button = ctk.CTkButton(root, text="Stop Meditation", command=terminate_meditation)
 stop_meditation_button.grid(row=1, column=0, padx=35, pady=10)
+
+tips = [
+    "Focus on your breath to stay present.",
+    "Let thoughts pass like clouds.",
+    "Relax your shoulders for deeper calm.",
+    "Try counting each exhale silently.",
+    "Visualize a peaceful place.",
+    "Soften your gaze to relax your mind.",
+    "Feel the air move through your nose.",
+    "Release tension with each breath.",
+    "Stay gentle with yourself.",
+    "Notice the rhythm of your breathing."
+]
+
+def update_tips_box():
+    random_tip = random.choice(tips)
+    tips_box_label.configure(text=f"Tip: {random_tip}")
+    root.after(2000, update_tips_box)
+
+tips_box_frame = ctk.CTkFrame(
+    root,
+    fg_color="#242424",
+    width=screenwidth,
+    height=50
+)
+tips_box_frame.place(x=0, y=screenheight - 75)
+
+tips_box_label = ctk.CTkLabel(
+    tips_box_frame, 
+    text="", 
+    text_color="white",
+    font=("Arial", 12)
+)
+tips_box_label.place(relx=0.05, rely=0.7, anchor="w")
+
+update_tips_box()
 
 root.mainloop()
