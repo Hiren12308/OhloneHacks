@@ -21,6 +21,7 @@ hour = ctk.StringVar(value="00")
 minute = ctk.StringVar(value="03")
 second = ctk.StringVar(value="00")
 tasks = []
+clear_flag = False  # Flag to track if tasks have been cleared
 
 # ------------------------ TIMER FUNCTIONS ------------------------
 
@@ -102,6 +103,7 @@ def toggle_strikethrough(task_label, task_var):
 
 def add_task():
     """Add a new task to the list."""
+    global clear_flag
     task = task_entry.get()
     if task:
         task_frame = ctk.CTkFrame(tasks_frame, fg_color="transparent")
@@ -117,11 +119,13 @@ def add_task():
 
         task_entry.delete(0, "end")
         tasks.append((task_frame, task_var, task_label))
+        clear_flag = False  # Reset clear flag when a new task is added
     else:
         messagebox.showwarning("Warning", "You must enter a task.")
 
 def delete_task():
     """Delete selected tasks."""
+    global clear_flag
     unchecked_tasks = []
     for task_frame, task_var, task_label in tasks:
         if task_var.get() == 1:
@@ -130,12 +134,50 @@ def delete_task():
             unchecked_tasks.append((task_frame, task_var, task_label))
     tasks.clear()
     tasks.extend(unchecked_tasks)
+    clear_flag = True  # Set the clear flag when tasks are deleted
 
 def clear_tasks():
     """Clear all tasks."""
+    global clear_flag
     for task_frame, _, _ in tasks:
         task_frame.destroy()
     tasks.clear()
+    clear_flag = True  # Set the clear flag when tasks are cleared
+
+def save_tasks():
+    """Save tasks to a file."""
+    with open("tasks.txt", "w") as file:
+        for task_frame, task_var, task_label in tasks:
+            task = task_label.cget("text")
+            file.write(task + "\n")
+    messagebox.showinfo("Info", "Tasks saved successfully.")
+
+def load_tasks():
+    """Load tasks from a file only if tasks have not been cleared."""
+    if clear_flag:
+        messagebox.showwarning("Warning", "You cannot load tasks after clearing or deleting them.")
+        return
+
+    try:
+        with open("tasks.txt", "r") as file:
+            loaded_tasks = file.readlines()
+            for task in loaded_tasks:
+                task = task.strip()
+                task_frame = ctk.CTkFrame(tasks_frame, fg_color="transparent")
+                task_var = ctk.IntVar()
+
+                task_label = ctk.CTkLabel(task_frame, text=task, font=("Arial", 18), text_color="white")
+                task_checkbox = ctk.CTkCheckBox(task_frame, text="", variable=task_var, 
+                                                command=lambda: toggle_strikethrough(task_label, task_var))
+
+                task_checkbox.pack(side="left", padx=5, pady=3)
+                task_label.pack(side="left", padx=10, pady=3)
+                task_frame.pack(anchor="w", pady=5, fill="x")
+
+                tasks.append((task_frame, task_var, task_label))
+        messagebox.showinfo("Info", "Tasks loaded successfully.")
+    except FileNotFoundError:
+        messagebox.showwarning("Warning", "No saved tasks found.")
 
 # ------------------------ UI LAYOUT ------------------------
 
@@ -204,10 +246,16 @@ delete_button.pack(side="left", padx=5, expand=True)
 clear_button = ctk.CTkButton(buttons_frame, text="Clear Tasks", command=clear_tasks, fg_color="gray", font=("Arial", 14, "bold"))
 clear_button.pack(side="left", padx=5, expand=True)
 
-task_entry = ctk.CTkEntry(todo_frame, placeholder_text="Enter a task...", font=("Arial", 14))
-task_entry.pack(pady=5, fill="x")
+save_button = ctk.CTkButton(buttons_frame, text="Save Tasks", command=save_tasks, font=("Arial", 14, "bold"))
+save_button.pack(side="left", padx=5, expand=True)
+
+load_button = ctk.CTkButton(buttons_frame, text="Load Tasks", command=load_tasks, font=("Arial", 14, "bold"))
+load_button.pack(side="left", padx=5, expand=True)
+
+task_entry = ctk.CTkEntry(todo_frame, font=("Arial", 18), placeholder_text="Enter new task...")
+task_entry.pack(pady=10, padx=10, fill="x")
 
 add_button = ctk.CTkButton(todo_frame, text="Add Task", command=add_task, font=("Arial", 14, "bold"))
-add_button.pack(pady=5, fill="x")
+add_button.pack(pady=5)
 
 root.mainloop()
