@@ -7,7 +7,7 @@ adjusted_screenwidth = (root.winfo_screenwidth()) * 0.8
 adjusted_screenheight = (root.winfo_screenheight()) * 0.8
 
 # Flag for stop button
-stop_countdown = False
+stop = False
 
 # For the expanding circle
 pause = False
@@ -23,6 +23,50 @@ animation_duration = 4000
 time_step = 40
 steps_per_cycle = animation_duration // time_step
 radius_step = (max_radius - min_radius) / steps_per_cycle
+
+frames_per_second = 40
+frame_duration_milliseconds = 1000 // frames_per_second
+
+box_stage_duration_seconds = 4
+box_stage_duration_milliseconds = box_stage_duration_seconds * 1000
+radius_increment = (max_radius - min_radius) / (box_stage_duration_seconds * frames_per_second)
+print("radius_increment = ", radius_increment)
+
+print("total_radius_increment = ", box_stage_duration_milliseconds / frame_duration_milliseconds * radius_increment)
+
+def render_circle_stage(stage_name, radius, radius_increment, duration_milliseconds):
+    if stop: return
+    duration_milliseconds -= frame_duration_milliseconds
+    if duration_milliseconds < 0:
+        return
+    message_label.configure(text = stage_name)
+    canvas.coords(circle, center_x - radius, center_y - radius, center_x + radius, center_y + radius)
+    print("radius = ", radius)
+    radius += radius_increment
+    root.after(frame_duration_milliseconds, render_circle_stage, stage_name, radius, radius_increment, duration_milliseconds)
+
+def render_circle():
+    if stop: return
+
+    # Inhale stage
+    stage_start_milliseconds = 0
+    root.after(stage_start_milliseconds, render_circle_stage, "Breath in...", min_radius, radius_increment, box_stage_duration_milliseconds)
+
+    # Inhale-Hold stage
+    stage_start_milliseconds += box_stage_duration_milliseconds
+    root.after(stage_start_milliseconds, render_circle_stage, "Hold...", max_radius, 0, box_stage_duration_milliseconds)
+
+    # Exhale stage
+    stage_start_milliseconds += box_stage_duration_milliseconds
+    root.after(stage_start_milliseconds, render_circle_stage, "Breath out...", max_radius, -radius_increment, box_stage_duration_milliseconds)
+
+    # Exhale-Hold stage
+    stage_start_milliseconds += box_stage_duration_milliseconds
+    root.after(stage_start_milliseconds, render_circle_stage, "Hold...", min_radius, 0, box_stage_duration_milliseconds)
+
+    # Repeat again
+    stage_start_milliseconds += box_stage_duration_milliseconds
+    root.after(stage_start_milliseconds, render_circle)
 
 # Functions:
 def animate_circle():
@@ -56,13 +100,13 @@ def resume_growth():
     animate_circle()
 
 def countdown(count, message, on_complete=None):
-    global stop_countdown
-    if stop_countdown:
-        stop_countdown = False
+    global stop
+    if stop:
+        stop = False
         return
 
     label.configure(text=count)
-    message_label.configure(text=message)
+    # message_label.configure(text=message)
 
     if count >= 1:
         root.after(1000, countdown, count - 1, message, on_complete)
@@ -71,17 +115,17 @@ def countdown(count, message, on_complete=None):
             on_complete()
 
 def run_countdowns(sequence, index=0):
-    global stop_countdown
-    stop_countdown = False
+    global stop
+    stop = False
 
-    animate_circle()
-    if index < len(sequence):
-        count, message = sequence[index]
-        countdown(count, message, lambda: run_countdowns(sequence, index + 1))
+    render_circle()
+    # if index < len(sequence):
+    #     count, message = sequence[index]
+    #     countdown(count, message, lambda: run_countdowns(sequence, index + 1))
 
 def terminate_meditation():
-    global stop_countdown
-    stop_countdown = True
+    global stop
+    stop = True
 
 # Other objects and things
 sequence = [
