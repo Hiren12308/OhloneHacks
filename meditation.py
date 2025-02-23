@@ -1,15 +1,22 @@
 import customtkinter as ctk
+import pygame
 
 root = ctk.CTk()
+
+# Start playing relaxing music
+pygame.mixer.init()
+# Woodland Ambience Sound Effect - Duddingston Village.wav by BurghRecords -- https://freesound.org/s/434712/ -- License: Creative Commons 0
+pygame.mixer.music.load("audio/nature_sounds.wav")
+pygame.mixer.music.play(loops = 3)
 
 # Screen size
 adjusted_screenwidth = (root.winfo_screenwidth()) * 0.8
 adjusted_screenheight = (root.winfo_screenheight()) * 0.8
 
 INHALE = "Breathe in..."
-INHALE_HOLD = "Hold..."
+INHALE_HOLD = "Hold inhale..."
 EXHALE = "Breathe out..."
-EXHALE_HOLD = "Hold..."
+EXHALE_HOLD = "Hold exhale..."
 
 # Flag for stop button
 stop = False
