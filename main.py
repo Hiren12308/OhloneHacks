@@ -3,27 +3,24 @@ import time
 import math
 from tkinter import messagebox
 
-# Set theme
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# Initialize main window
 root = ctk.CTk()
 root.title("Timer & To-Do List")
 
-# Dynamically set window size
+
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 root.geometry(f"{int(screen_width * 0.8)}x{int(screen_height * 0.8)}")
 
-# Timer variables
+
 hour = ctk.StringVar(value="00")
 minute = ctk.StringVar(value="03")
 second = ctk.StringVar(value="00")
 tasks = []
-clear_flag = False  # Flag to track if tasks have been cleared
+clear_flag = False  
 
-# ------------------------ TIMER FUNCTIONS ------------------------
 
 def relax():
     """Reset timer to relaxation mode (5 mins)."""
@@ -43,7 +40,7 @@ def countdown():
         
         start_button.configure(state="disabled")
         canvas.delete("progress")
-        relax_button.pack_forget()  # Hide the relax button at the start
+        relax_button.pack_forget()  
 
         def update_timer():
             nonlocal temp
@@ -60,9 +57,9 @@ def countdown():
                 start_angle = 90
                 end_angle = start_angle - angle
                 
-                # Match arc coordinates to the gray circle
-                arc_padding = padding  # Same starting point as outer circle
-                arc_size = circle_size  # Same size as outer circle
+                
+                arc_padding = padding  
+                arc_size = circle_size  
                 
                 canvas.delete("progress")
                 canvas.create_arc(
@@ -84,7 +81,7 @@ def countdown():
                 else:
                     messagebox.showinfo("Time Countdown", "Time's up!")
                     start_button.configure(state="normal")
-                    relax_button.pack(pady=5)  # Show the relax button when timer ends
+                    relax_button.pack(pady=5)  
 
         update_timer()
 
@@ -92,7 +89,7 @@ def countdown():
         messagebox.showerror("Invalid Input", "Please enter valid numbers.")
         start_button.configure(state="normal")
 
-# ------------------------ TO-DO LIST FUNCTIONS ------------------------
+
 
 def toggle_strikethrough(task_label, task_var):
     """Strike through text when task is checked."""
@@ -119,7 +116,7 @@ def add_task():
 
         task_entry.delete(0, "end")
         tasks.append((task_frame, task_var, task_label))
-        clear_flag = False  # Reset clear flag when a new task is added
+        clear_flag = False  
     else:
         messagebox.showwarning("Warning", "You must enter a task.")
 
@@ -134,7 +131,7 @@ def delete_task():
             unchecked_tasks.append((task_frame, task_var, task_label))
     tasks.clear()
     tasks.extend(unchecked_tasks)
-    clear_flag = True  # Set the clear flag when tasks are deleted
+    clear_flag = True  
 
 def clear_tasks():
     """Clear all tasks."""
@@ -142,7 +139,7 @@ def clear_tasks():
     for task_frame, _, _ in tasks:
         task_frame.destroy()
     tasks.clear()
-    clear_flag = True  # Set the clear flag when tasks are cleared
+    clear_flag = True  
 
 def save_tasks():
     """Save tasks to a file."""
@@ -179,28 +176,28 @@ def load_tasks():
     except FileNotFoundError:
         messagebox.showwarning("Warning", "No saved tasks found.")
 
-# ------------------------ UI LAYOUT ------------------------
+
 
 main_frame = ctk.CTkFrame(root)
 main_frame.pack(pady=10, padx=10, fill="both", expand=True)
 
-# -------- LEFT SIDE: TIMER --------
+
 timer_frame = ctk.CTkFrame(main_frame)
 timer_frame.pack(side="left", padx=20, fill="both", expand=True)
 
-# Responsive canvas size
+
 canvas_size = int(min(screen_width, screen_height) * 0.3)
 canvas = ctk.CTkCanvas(master=timer_frame, width=canvas_size, height=canvas_size, 
                       bg=root.cget('bg'), highlightthickness=0)
 canvas.pack(pady=10)
 
-# Circle dimensions
+
 padding = 20
 circle_size = canvas_size - 2 * padding
 canvas.create_oval(padding, padding, circle_size + padding, circle_size + padding, 
                   outline='gray', width=5)
 
-# Center entries inside the circle
+
 center_x = canvas_size / 2
 center_y = canvas_size / 2
 font_size = int(canvas_size * 0.09)
@@ -223,14 +220,14 @@ secondEntry = ctk.CTkEntry(master=canvas, textvariable=second, font=("Arial", fo
                           width=40, justify="center")
 secondEntry.place(x=center_x + 60, y=center_y, anchor="center")
 
-# Timer Buttons
+
 start_button = ctk.CTkButton(timer_frame, text="Start Countdown", command=countdown, font=("Arial", 14, "bold"))
 start_button.pack(pady=5)
 
 relax_button = ctk.CTkButton(timer_frame, text="Relax (5 min)", command=relax, font=("Arial", 14, "bold"))
-relax_button.pack_forget()  # Initially hide the relax button
+relax_button.pack_forget()  
 
-# -------- RIGHT SIDE: TO-DO LIST --------
+
 todo_frame = ctk.CTkFrame(main_frame)
 todo_frame.pack(side="right", padx=20, fill="both", expand=True)
 
