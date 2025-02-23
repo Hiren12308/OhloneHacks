@@ -2,13 +2,6 @@ import customtkinter as ctk
 import time
 import math
 from tkinter import messagebox
-import pygame
-
-pygame.mixer.init()
-
-def play_alarm():
-   pygame.mixer.music.load("audio/alarm_sound.mp3")
-   pygame.mixer.music.play()
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -16,11 +9,9 @@ ctk.set_default_color_theme("blue")
 root = ctk.CTk()
 root.title("Timer & To-Do List")
 
-
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 root.geometry(f"{int(screen_width * 0.8)}x{int(screen_height * 0.8)}")
-
 
 hour = ctk.StringVar(value="00")
 minute = ctk.StringVar(value="03")
@@ -28,11 +19,72 @@ second = ctk.StringVar(value="00")
 tasks = []
 clear_flag = False  
 
+# Meditation variables
+INHALE = "Breathe in..."
+INHALE_HOLD = "Hold..."
+EXHALE = "Breathe out..."
+EXHALE_HOLD = "Hold..."
+stop = False
+center_x = 200
+center_y = 200
+radius = 10
+max_radius = 100
+min_radius = 10
+frames_per_second = 40
+frame_duration_milliseconds = 1000 // frames_per_second
+box_stage_duration_seconds = 4
+box_stage_duration_milliseconds = box_stage_duration_seconds * 1000
+frames_per_box_stage = box_stage_duration_seconds * frames_per_second
+radius_increment_size = (max_radius - min_radius) / (box_stage_duration_seconds * frames_per_second)
 
 def relax():
+    # Set the timer to 5 minutes
     hour.set("00")
     minute.set("05")
     second.set("00")
+
+    # Hide the "Relax (5 min)" button
+    relax_button.pack_forget()
+
+    # Show the "Meditate" button underneath the "Relax (5 min)" button
+    meditate_button.pack(pady=5)
+
+def switch_to_meditation():
+    # Hide the To-Do List frame
+    todo_frame.pack_forget()
+
+    # Show the Meditation frame
+    meditation_frame.pack(side="right", padx=20, fill="both", expand=True)
+
+def start_meditation():
+    global stop
+    stop = False
+    render(1, INHALE, min_radius, radius_increment_size)
+
+def terminate_meditation():
+    global stop
+    stop = True
+
+def render(frame, stage_name, radius, radius_increment):
+    if stop: return
+    if frame % frames_per_box_stage == 0:
+        if stage_name == INHALE:
+            stage_name = INHALE_HOLD
+            radius_increment = 0
+        elif stage_name == INHALE_HOLD:
+            stage_name = EXHALE
+            radius_increment = -radius_increment_size
+        elif stage_name == EXHALE:
+            stage_name = EXHALE_HOLD
+            radius_increment = 0
+        elif stage_name == EXHALE_HOLD:
+            stage_name = INHALE
+            radius_increment = radius_increment_size
+    message_label.configure(text=stage_name)
+    meditation_canvas.coords(circle, center_x - radius, center_y - radius, center_x + radius, center_y + radius)
+    frame += 1
+    radius += radius_increment
+    root.after(frame_duration_milliseconds, render, frame, stage_name, radius, radius_increment)
 
 def countdown():
     try:
@@ -46,6 +98,7 @@ def countdown():
         start_button.configure(state="disabled")
         canvas.delete("progress")
         relax_button.pack_forget()  
+        meditate_button.pack_forget()  # Hide the "Meditate" button when countdown starts
 
         def update_timer():
             nonlocal temp
@@ -61,7 +114,6 @@ def countdown():
                 
                 start_angle = 90
                 end_angle = start_angle - angle
-                
                 
                 arc_padding = padding  
                 arc_size = circle_size  
@@ -84,18 +136,15 @@ def countdown():
                     temp -= 1
                     root.after(1000, update_timer)
                 else:
-                    play_alarm()
                     messagebox.showinfo("Time Countdown", "Time's up!")
                     start_button.configure(state="normal")
-                    relax_button.pack(pady=5)  
+                    relax_button.pack(pady=5)  # Show the "Relax (5 min)" button again
 
         update_timer()
 
     except ValueError:
         messagebox.showerror("Invalid Input", "Please enter valid numbers.")
         start_button.configure(state="normal")
-
-
 
 def toggle_strikethrough(task_label, task_var):
     if task_var.get() == 1:
@@ -114,6 +163,11 @@ def add_task():
         task_checkbox = ctk.CTkCheckBox(task_frame, text="", variable=task_var, 
                                       command=lambda: toggle_strikethrough(task_label, task_var))
 
+        # Add an "Edit" button to the far right of the task frame
+        edit_button = ctk.CTkButton(task_frame, text="Edit", width=50, font=("Arial", 12),
+                                   command=lambda: edit_task(task_label))
+        edit_button.pack(side="right", padx=5)
+
         task_checkbox.pack(side="left", padx=5, pady=3)
         task_label.pack(side="left", padx=10, pady=3)
         task_frame.pack(anchor="w", pady=5, fill="x")
@@ -123,6 +177,32 @@ def add_task():
         clear_flag = False  
     else:
         messagebox.showwarning("Warning", "You must enter a task.")
+
+def edit_task(task_label):
+    edit_window = ctk.CTkToplevel(root)
+    edit_window.title("Edit Task")
+    edit_window.geometry("300x100")
+
+    # Ensure the edit window appears on top of the main window
+    edit_window.lift()  # Bring the window to the top
+    edit_window.focus_force()  # Force focus on the window
+    edit_window.grab_set()  # Make the window modal
+
+    new_task_entry = ctk.CTkEntry(edit_window, font=("Arial", 14))
+    new_task_entry.pack(pady=10, padx=10, fill="x")
+    new_task_entry.insert(0, task_label.cget("text"))
+
+    def save_edited_task():
+        new_task = new_task_entry.get()
+        if new_task:
+            task_label.configure(text=new_task)
+            edit_window.grab_release()  # Release the grab before destroying the window
+            edit_window.destroy()
+        else:
+            messagebox.showwarning("Warning", "Task cannot be empty.")
+
+    save_button = ctk.CTkButton(edit_window, text="Save", command=save_edited_task, font=("Arial", 14, "bold"))
+    save_button.pack(pady=5)
 
 def delete_task():
     global clear_flag
@@ -167,6 +247,11 @@ def load_tasks():
                 task_checkbox = ctk.CTkCheckBox(task_frame, text="", variable=task_var, 
                                                 command=lambda: toggle_strikethrough(task_label, task_var))
 
+                # Add an "Edit" button to the far right of the task frame
+                edit_button = ctk.CTkButton(task_frame, text="Edit", width=50, font=("Arial", 12),
+                                           command=lambda: edit_task(task_label))
+                edit_button.pack(side="right", padx=5)
+
                 task_checkbox.pack(side="left", padx=5, pady=3)
                 task_label.pack(side="left", padx=10, pady=3)
                 task_frame.pack(anchor="w", pady=5, fill="x")
@@ -176,27 +261,23 @@ def load_tasks():
     except FileNotFoundError:
         messagebox.showwarning("Warning", "No saved tasks found.")
 
-
-
+# Main frame
 main_frame = ctk.CTkFrame(root)
 main_frame.pack(pady=10, padx=10, fill="both", expand=True)
 
-
+# Timer frame
 timer_frame = ctk.CTkFrame(main_frame)
 timer_frame.pack(side="left", padx=20, fill="both", expand=True)
-
 
 canvas_size = int(min(screen_width, screen_height) * 0.3)
 canvas = ctk.CTkCanvas(master=timer_frame, width=canvas_size, height=canvas_size, 
                       bg=root.cget('bg'), highlightthickness=0)
 canvas.pack(pady=10)
 
-
 padding = 20
 circle_size = canvas_size - 2 * padding
 canvas.create_oval(padding, padding, circle_size + padding, circle_size + padding, 
                   outline='gray', width=5)
-
 
 center_x = canvas_size / 2
 center_y = canvas_size / 2
@@ -220,14 +301,16 @@ secondEntry = ctk.CTkEntry(master=canvas, textvariable=second, font=("Arial", fo
                           width=40, justify="center")
 secondEntry.place(x=center_x + 60, y=center_y, anchor="center")
 
-
 start_button = ctk.CTkButton(timer_frame, text="Start Countdown", command=countdown, font=("Arial", 14, "bold"))
 start_button.pack(pady=5)
 
 relax_button = ctk.CTkButton(timer_frame, text="Relax (5 min)", command=relax, font=("Arial", 14, "bold"))
-relax_button.pack_forget()  
+relax_button.pack(pady=5)
 
+meditate_button = ctk.CTkButton(timer_frame, text="Meditate", command=switch_to_meditation, font=("Arial", 14, "bold"))
+meditate_button.pack_forget()  # Initially hidden
 
+# To-Do List frame
 todo_frame = ctk.CTkFrame(main_frame)
 todo_frame.pack(side="right", padx=20, fill="both", expand=True)
 
@@ -254,5 +337,30 @@ task_entry.pack(pady=10, padx=10, fill="x")
 
 add_button = ctk.CTkButton(todo_frame, text="Add Task", command=add_task, font=("Arial", 14, "bold"))
 add_button.pack(pady=5)
+
+# Meditation frame
+meditation_frame = ctk.CTkFrame(main_frame)
+meditation_frame.pack_forget()  # Initially hidden
+
+meditation_canvas = ctk.CTkCanvas(meditation_frame, width=screen_width, height=screen_height, bg="#242424")
+meditation_canvas.grid(row=0, column=0, sticky="nsew")
+
+meditation_frame.grid_rowconfigure(0, weight=1)
+meditation_frame.grid_columnconfigure(0, weight=1)
+
+circle = meditation_canvas.create_oval(
+    center_x - radius, center_y - radius,
+    center_x + radius, center_y + radius,
+    fill="#3B8EEA", outline="", width=0
+)
+
+message_label = ctk.CTkLabel(meditation_frame, text="", bg_color="#242424")
+message_label.place(x=35, y=50)
+
+start_meditation_button = ctk.CTkButton(meditation_frame, text="Start Meditation", command=start_meditation)
+start_meditation_button.grid(row=0, column=0, padx=35, pady=150)
+
+stop_meditation_button = ctk.CTkButton(meditation_frame, text="Stop Meditation", command=terminate_meditation)
+stop_meditation_button.grid(row=1, column=0, padx=35, pady=10)
 
 root.mainloop()
